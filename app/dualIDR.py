@@ -66,7 +66,7 @@ def update_affinities():
 	global embedding_1, embedding_2
 	global y1, y2
 
-	print('computing affinities (samples, genes) ...')
+	print('computing affinities (samples, features) ...')
 	affinities_1 = affinity.PerplexityBasedNN(
 	    x1[:,idx_var],
 	    perplexity=slider_perplexity_1.value,
@@ -85,7 +85,7 @@ def update_affinities():
 	    verbose=False,
 	)
 
-	print('creating embedding objects (samples, genes) ...')
+	print('creating embedding objects (samples, features) ...')
 	# DEFINIMOS OBJETO EMBEDDING PARA OPTIMIZAR
 	embedding_1 = TSNEEmbedding(
 	    y1,
@@ -128,14 +128,14 @@ x2 = X.T.copy()
 y2 = np.random.randn(x2.shape[0],2)
 
 # 2D map initialization
-print('initializing maps (samples, genes) ...')
+print('initializing maps (samples, features) ...')
 from sklearn.decomposition import PCA
 pca = PCA(n_components=2, random_state=1)
 y1 = pca.fit_transform(X)
 y2 = pca.fit_transform(X.T)
 
 N = x1.shape[0]		# número de muestras
-M = x2.shape[0]		# número de genes
+M = x2.shape[0]		# número de features
 
 # selection colors
 colors_obs = ['#000000']*N
@@ -149,9 +149,9 @@ source_var = ColumnDataSource({'x2':y2[:,0],'y2':y2[:,1],'labels':Fx,'colors':co
 update_affinities()
 
 def update_tsne():
-	"""update conditional t-SNE's of samples and genes
-	samples: distances conditioned to a subset of the genes (idx_var)
-	  genes: distances conditioned to a subset of the samples (idx_obs)
+	"""update conditional t-SNE's of samples and features
+	samples: distances conditioned to a subset of the features (idx_var)
+	  features: distances conditioned to a subset of the samples (idx_obs)
 
 	Notes:
 	  - the update takes just a few epochs
@@ -174,7 +174,7 @@ def update_tsne():
 def reset_original_state():
 	global y1,y2
 	# train a UMAP
-	print('training UMAP (samples and genes)...')
+	print('training UMAP (samples and features)...')
 	y1 = pca.fit_transform(X)
 	y2 = pca.fit_transform(X.T)
 
@@ -183,7 +183,7 @@ def reset_original_state():
 	slider_perplexity_1.value = 20
 	slider_lr_1.value = 1
 
-	# select all samples and genes (default)
+	# select all samples and features (default)
 	textinput_colorsel_obs.value = ''
 	textinput_colorsel_var.value = ''
 
@@ -215,7 +215,7 @@ def update_conditional_dr():
 
 	update_affinities()
 
-# COLOR OF SAMPLES AND GENES
+# COLOR OF SAMPLES AND features
 def update_color_obs_1():
 	idx = get_idx_selection(textinput_colorsel_obs.value,Fy,no_empty=True)
 	source_obs.data['colors'] = [textinput_color_obs.value if i in idx else source_obs.data['colors'][i] for i in range(N)]
@@ -270,7 +270,7 @@ slider_perplexity_2.on_change('value',slider_perplexity_2_callback)
 
 
 # buttons
-button_conditional_dr = Button(label='use selected genes & samples')
+button_conditional_dr = Button(label='use selected features & samples')
 button_conditional_dr.on_click(update_conditional_dr)
 button_obs = Button(label='selection (smp) ➡ color')
 button_obs.on_click(update_color_obs_1)
@@ -299,14 +299,14 @@ button_exaggeration.on_click(change_exaggeration)
 textinput_colorsel_obs = TextAreaInput(value="", title='selected samples', width=500,height=145,max_length=10000)
 textinput_colorsel_obs.value = ''
 
-textinput_colorsel_var = TextAreaInput(value="", title='selected genes', width=500,height=145,max_length=10000)
+textinput_colorsel_var = TextAreaInput(value="", title='selected features', width=500,height=145,max_length=10000)
 textinput_colorsel_var.value = ''
 
 textinput_color_obs = TextInput(title='color for samples',width=145)
 textinput_color_obs.value = 'black'
 textinput_color_obs.on_change('value',update_color_obs)
 
-textinput_color_var = TextInput(title='color for genes',width=145)
+textinput_color_var = TextInput(title='color for features',width=145)
 textinput_color_var.value = 'black'
 textinput_color_var.on_change('value',update_color_var)
 
@@ -317,18 +317,18 @@ checkbox_group.on_click(checkbox_callback)
 
 # ELEMENTO DE TEXTO
 cabecera = Div(text='''
-	<h1>Dual iDR de líneas celulares en normoxia/hipoxia (PGL184, PCC64 y PCC66)</h1>
+	<h1>Dual iDR de ensayos electromecánicos con máquina asíncrona</h1>
 			   <p><img src="https://gsdpi.edv.uniovi.es/logo-gsdpi-research-team.png", width="100px"> <i>Grupo de Supervisión, Diagnóstico y Descubrimiento del Conocimiento en Procesos de Ingeniería (GSDPI)</i>. Universidad de Oviedo, 2023</p>
-	<p><i>Descripción</i>: Aplicación de reducción de la dimensionalidad <i>dual</i> e <i>interactiva</i>. Muestra dos proyecciones (<i>dual</i>) actualizadas en tiempo real, la "sample view" y la "gene view", 
-			   en las que se organizan espacialmente las muestras y los genes según la similitud en su expresión genética para grupos concretos de genes y muestras respectivaemente. El usuario 
-			   puede condicionar las proyecciones en tiempo de ejecución cambiando los grupos de genes y/o de muestras cuyas expresiones se tienen en cuenta en las proyecciones. Los cambios son
-			   reflejados en tiempo real y de forma continua. La aplicación permite también asignar colores a grupos de genes o de muestras, permitiendo al usuario hacer un seguimiento (<i>"tracking"</i>) de elementos de interés.</p>''',width=1000,height=250)
+	<p><i>Descripción</i>: Aplicación de reducción de la dimensionalidad <i>dual</i> e <i>interactiva</i>. Muestra dos proyecciones (<i>dual</i>) actualizadas en tiempo real, la "sample view" y la "feature view", 
+			   en las que se organizan espacialmente las muestras y los features según la similitud en su expresión genética para grupos concretos de features y muestras respectivaemente. El usuario 
+			   puede condicionar las proyecciones en tiempo de ejecución cambiando los grupos de features y/o de muestras cuyas expresiones se tienen en cuenta en las proyecciones. Los cambios son
+			   reflejados en tiempo real y de forma continua. La aplicación permite también asignar colores a grupos de features o de muestras, permitiendo al usuario hacer un seguimiento (<i>"tracking"</i>) de elementos de interés.</p>''',width=1000,height=250)
 
 
 # SAMPLE VIEW
-fig1 = figure(width=700,height=700,title='sample view 🧪',
+fig1 = figure(width=700,height=700,title='Espacio muestral',
 	tools="crosshair,lasso_select,pan,reset,wheel_zoom",
-	tooltips=[("sample:","@labels"),("cancer:","@can_labels")],match_aspect=True,output_backend='webgl')
+	tooltips=[("sample:","@labels")],match_aspect=True,output_backend='webgl')
 fig1.circle(x='x1',y='y1',color='colors', source=source_obs,size=7)
 fig1.title.text_font_size='16px'
 fig1.on_event(SelectionGeometry,selection_callback_2Dfil)
@@ -338,10 +338,10 @@ labels_obs.text_align='center'
 labels_obs.text_font_size={'value': '10px'}
 fig1.add_layout(labels_obs)
 
-# GENE VIEW
-fig2 = figure(width=700,height=700,title='gene view 🧬',
+# FEATURE VIEW
+fig2 = figure(width=700,height=700,title='Espacio de características',
 	tools="crosshair,lasso_select,pan,reset,wheel_zoom",
-	tooltips=[("gene:","@labels")],
+	tooltips=[("feature:","@labels")],
 	match_aspect=True,output_backend='webgl')
 fig2.circle(x='x2',y='y2',color='colors',source=source_var,size=7)
 fig2.title.text_font_size='16px'
@@ -353,7 +353,7 @@ labels_var.text_font_size={'value': '10px'}
 fig2.add_layout(labels_var)
 
 
-curdoc().add_periodic_callback(update_tsne,200)		# callback lenta
+curdoc().add_periodic_callback(update_tsne,50)		# callback lenta
 
 curdoc().add_root(layout(column(cabecera, row(
 	column(fig1,slider_perplexity_1,slider_lr_1,textinput_color_obs,textinput_colorsel_obs),

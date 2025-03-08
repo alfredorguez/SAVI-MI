@@ -35,8 +35,8 @@ def get_data():
 
     # Parámetros constructivos de las ventanas
     N = 1000 # Tamaño de la ventana
-    delta = 10 # Desplazamiento de la ventana
-    bandasFreq = np.arange(25, 125, 25) # Bandas de frecuencia
+    delta = 200 # Desplazamiento de la ventana
+    bandasFreq = np.arange(25, 525, 25) # Bandas de frecuencia
 
     f = np.arange(0, N, 1) * (fm/N) # Vector de frecuencias
 
@@ -65,7 +65,7 @@ def get_data():
                 carVector[i * Xn.shape[1] + j] = np.sqrt(np.sum(armonicosSeleccionados**2) / len(armonicosSeleccionados))
                 
         # Cálculo de la etiqueta de la ventana
-        vy = Y_int[idx].mean()
+        vy = int(round(Y_int[idx].mean()))
         
         # Añadir vector de características a la matriz
         F = np.vstack((F, carVector))
@@ -79,6 +79,9 @@ def get_data():
     # Eliminar primera fila de la matriz de características
     F = F[1:,:]
     Fy = Fy[1:]
+
+    # Transformación de etiquetas de muestras de enteros a strings
+    Fy = le.inverse_transform(Fy).tolist()
 
     return F, Fy, Fx
 
