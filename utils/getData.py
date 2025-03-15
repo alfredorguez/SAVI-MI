@@ -1,9 +1,9 @@
 import numpy as np
 
-def get_data():
+def get_data(datapath = "datos/dataicann.mat"):
     from scipy.io import loadmat
     # Obtención de datos en crudo
-    raw_data = loadmat("datos/dataicann.mat")
+    raw_data = loadmat(datapath)
     muestras = raw_data['z']
     etiquetas = raw_data['nom']
     nombresCaracteristicas = raw_data['NombresVariables']
@@ -35,7 +35,7 @@ def get_data():
 
     # Parámetros constructivos de las ventanas
     N = 1000 # Tamaño de la ventana
-    delta = 200 # Desplazamiento de la ventana
+    delta = 400 # Desplazamiento de la ventana
     bandasFreq = np.arange(25, 525, 25) # Bandas de frecuencia
 
     f = np.arange(0, N, 1) * (fm/N) # Vector de frecuencias
@@ -83,11 +83,15 @@ def get_data():
     # Transformación de etiquetas de muestras de enteros a strings
     Fy = le.inverse_transform(Fy).tolist()
 
-    return F, Fy, Fx
+    # Normalziaci
+    scalerF = StandardScaler()
+    Fn = scalerF.fit_transform(F)
+
+    return Fn, Fy, Fx
 
 if __name__ == "__main__":
     F, Fy, Fx = get_data()
     print(F.shape)
-    print(Fy.shape)
-    print(Fx)
+    #print(Fy.shape)
+    print(len(Fx))
     print(len(Fx))

@@ -137,6 +137,8 @@ y2 = pca.fit_transform(X.T)
 N = x1.shape[0]		# número de muestras
 M = x2.shape[0]		# número de features
 
+print(f"{N}")
+
 # selection colors
 colors_obs = ['#000000']*N
 colors_var = ['#000000']*M
@@ -170,11 +172,13 @@ def update_tsne():
 	source_obs.data['x1'] = y1[:,0]
 	source_obs.data['y1'] = y1[:,1]
 	source_var.data['x2'] = y2[:,0]
+	source_var.data['y2'] = y2[:,1]
+
 	
 def reset_original_state():
 	global y1,y2
 	# train a UMAP
-	print('training UMAP (samples and features)...')
+	print('training PCA (samples and features)...')
 	y1 = pca.fit_transform(X)
 	y2 = pca.fit_transform(X.T)
 
@@ -318,11 +322,11 @@ checkbox_group.on_click(checkbox_callback)
 # ELEMENTO DE TEXTO
 cabecera = Div(text='''
 	<h1>Dual iDR de ensayos electromecánicos con máquina asíncrona</h1>
-			   <p><img src="https://gsdpi.edv.uniovi.es/logo-gsdpi-research-team.png", width="100px"> <i>Grupo de Supervisión, Diagnóstico y Descubrimiento del Conocimiento en Procesos de Ingeniería (GSDPI)</i>. Universidad de Oviedo, 2023</p>
+			  
 	<p><i>Descripción</i>: Aplicación de reducción de la dimensionalidad <i>dual</i> e <i>interactiva</i>. Muestra dos proyecciones (<i>dual</i>) actualizadas en tiempo real, la "sample view" y la "feature view", 
-			   en las que se organizan espacialmente las muestras y los features según la similitud en su expresión genética para grupos concretos de features y muestras respectivaemente. El usuario 
-			   puede condicionar las proyecciones en tiempo de ejecución cambiando los grupos de features y/o de muestras cuyas expresiones se tienen en cuenta en las proyecciones. Los cambios son
-			   reflejados en tiempo real y de forma continua. La aplicación permite también asignar colores a grupos de features o de muestras, permitiendo al usuario hacer un seguimiento (<i>"tracking"</i>) de elementos de interés.</p>''',width=1000,height=250)
+		en las que se organizan espacialmente las muestras y los features según la similitud en su expresión genética para grupos concretos de features y muestras respectivaemente. El usuario 
+		puede condicionar las proyecciones en tiempo de ejecución cambiando los grupos de features y/o de muestras cuyas expresiones se tienen en cuenta en las proyecciones. Los cambios son
+		reflejados en tiempo real y de forma continua. La aplicación permite también asignar colores a grupos de features o de muestras, permitiendo al usuario hacer un seguimiento (<i>"tracking"</i>) de elementos de interés.</p>''',width=1000,height=250)
 
 
 # SAMPLE VIEW
@@ -353,7 +357,7 @@ labels_var.text_font_size={'value': '10px'}
 fig2.add_layout(labels_var)
 
 
-curdoc().add_periodic_callback(update_tsne,50)		# callback lenta
+curdoc().add_periodic_callback(update_tsne,100)		# callback lenta
 
 curdoc().add_root(layout(column(cabecera, row(
 	column(fig1,slider_perplexity_1,slider_lr_1,textinput_color_obs,textinput_colorsel_obs),
