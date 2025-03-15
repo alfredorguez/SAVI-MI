@@ -53,8 +53,11 @@ def get_idx_selection(text,lista_labels, no_empty=True):
 		items = text.replace(' ','').split(',')
 		# 2023-09-09: se eligen terminos de la lista de cadenas "literamente iguales" (no "incluidas en")
 		# aux = list(map(lambda y:[lista_labels.index(X) for X in lista_labels if y in X],items))
-		aux = list(map(lambda y:[lista_labels.index(X) for X in lista_labels if y == X],items))
+		# aux = list(map(lambda y:[lista_labels.index(X) for X in lista_labels if y == X],items))
+		# idx_sel = list(set().union(*aux))
+		aux = list(map(lambda y: [i for i, X in enumerate(lista_labels) if y == X], items))
 		idx_sel = list(set().union(*aux))
+
 	elif no_empty:
 		idx_sel = [i for i,v in enumerate(lista_labels)]
 	
@@ -223,10 +226,12 @@ def update_conditional_dr():
 def update_color_obs_1():
 	idx = get_idx_selection(textinput_colorsel_obs.value,Fy,no_empty=True)
 	source_obs.data['colors'] = [textinput_color_obs.value if i in idx else source_obs.data['colors'][i] for i in range(N)]
+	print(f"update_color_obs_1: {textinput_color_obs.value}, {len(idx)} elementos")
 
 def update_color_var_1():
 	idx = get_idx_selection(textinput_colorsel_var.value,Fx,no_empty=True)
 	source_var.data['colors'] = [textinput_color_var.value if i in idx else source_var.data['colors'][i] for i in range(M)]
+	print(f"update_color_obs_1: {textinput_color_obs.value}, {len(idx)} elementos")
 
 def update_color_obs(attr,old,new):
 	idx = get_idx_selection(new,Fx)
@@ -244,7 +249,7 @@ def update_color_obs(attr,old,new):
 def update_color_var(attr,old,new):
 	idx = get_idx_selection(new,Fy)
 	
-	# gene expression color scale
+	# feature expression color scale
 	if len(idx)==1:
 		from matplotlib.cm import seismic
 		from matplotlib.colors import rgb2hex
@@ -252,6 +257,8 @@ def update_color_var(attr,old,new):
 		source_var.data['colors'] = [rgb2hex(seismic(np.interp(x,[-1,1],[0,1]))) for x in x2[:,idx[0]]]
 	else:
 		update_color_var_1()
+
+	print(attr,old,new)
 
 def checkbox_callback(attr):
 	if 0 in attr:
@@ -276,9 +283,9 @@ slider_perplexity_2.on_change('value',slider_perplexity_2_callback)
 # buttons
 button_conditional_dr = Button(label='use selected features & samples')
 button_conditional_dr.on_click(update_conditional_dr)
-button_obs = Button(label='selection (smp) ➡ color')
+button_obs = Button(label='selection (sample) ➡ color')
 button_obs.on_click(update_color_obs_1)
-button_var = Button(label='selection (gen) ➡ color')
+button_var = Button(label='selection (feature) ➡ color')
 button_var.on_click(update_color_var_1)
 button_reset = Button(label='reset projections')
 button_reset.on_click(reset_original_state)
@@ -315,7 +322,7 @@ textinput_color_var.value = 'black'
 textinput_color_var.on_change('value',update_color_var)
 
 
-checkbox_group = CheckboxGroup(labels=['sample labels', 'gene labels'], active=[0,1])
+checkbox_group = CheckboxGroup(labels=['sample labels', 'feature labels'], active=[0,1])
 checkbox_group.on_click(checkbox_callback)
 
 
@@ -357,7 +364,7 @@ labels_var.text_font_size={'value': '10px'}
 fig2.add_layout(labels_var)
 
 
-curdoc().add_periodic_callback(update_tsne,100)		# callback lenta
+curdoc().add_periodic_callback(update_tsne,50)		# callback lenta
 
 curdoc().add_root(layout(column(cabecera, row(
 	column(fig1,slider_perplexity_1,slider_lr_1,textinput_color_obs,textinput_colorsel_obs),
