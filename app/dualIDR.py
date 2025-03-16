@@ -1,5 +1,5 @@
 import numpy as np
-import pandas as pd
+import polars as pl
 from bokeh.plotting import figure, output_file
 from bokeh.events import MouseWheel, SelectionGeometry, ButtonClick, MouseMove, Reset, Press
 from bokeh.io import curdoc
@@ -11,7 +11,6 @@ import warnings
 import sys
 from openTSNE import TSNEEmbedding
 from openTSNE import affinity
-from openTSNE import initialization
 warnings.filterwarnings("ignore")
 
 sys.path.append('utils')
@@ -108,13 +107,15 @@ def update_affinities():
 	)
 	print('... done')
 
-# Obtención de datos
+# =============== Obtención de datos ===============
 
-F, Fy, Fx = get_data()
+F, Fy, Fx = get_data() # Matriz de características, etiquetas de muestras, etiquetas de características
 
 X = F
-M = F.shape[0]
-N = F.shape[1]
+M = F.shape[0] # número de muestras
+N = F.shape[1] # número de características
+
+idsMuestras = list(map(str, np.arange(M).tolist())) # Identificadores de muestras (Las etiquetas se repiten)
 
 selFil_idx = np.arange(M)
 selCol_idx = np.arange(N)
@@ -147,7 +148,7 @@ colors_obs = ['#000000']*N
 colors_var = ['#000000']*M
 
 # column datas sources
-source_obs = ColumnDataSource({'x1':y1[:,0],'y1':y1[:,1],'labels':Fy,'colors':colors_obs})
+source_obs = ColumnDataSource({'x1':y1[:,0],'y1':y1[:,1],'labels':Fy,'colors':colors_obs, 'ids':idsMuestras})
 source_var = ColumnDataSource({'x2':y2[:,0],'y2':y2[:,1],'labels':Fx,'colors':colors_var})
 
 # compute affinities by first time
@@ -196,11 +197,14 @@ def reset_original_state():
 
 	# update the selection
 	update_conditional_dr()
-	
+
+textoDRCondFil = ""
+
 def selection_callback_2Dfil(event):
-	global selFil, selFil_idx
-	selFil = [Fy[indice] for indice in source_obs.selected.indices]
+	global selFil, selFil_idx, textoDRCondFil
+	selFil = [idsMuestras[indice] for indice in source_obs.selected.indices]
 	selFil_idx = source_obs.selected.indices
+	textoDRCondFil = ','.join([idsMuestras[i] for i in selFil_idx])
 	textinput_colorsel_obs.value = ','.join([Fy[i] for i in selFil_idx])
 
 def selection_callback_2Dcol(event):
@@ -213,7 +217,7 @@ def update_conditional_dr():
 	global idx_obs, idx_var
 	global x1, x2
 
-	idx_obs = get_idx_selection(textinput_colorsel_obs.value,Fy,no_empty=True)
+	idx_obs = get_idx_selection(textoDRCondFil,idsMuestras,no_empty=True)
 	idx_var = get_idx_selection(textinput_colorsel_var.value,Fx,no_empty=True)
 
 	# show in textboxes the interpreted readings (for user check)
@@ -224,9 +228,10 @@ def update_conditional_dr():
 
 # COLOR OF SAMPLES AND features
 def update_color_obs_1():
-	idx = get_idx_selection(textinput_colorsel_obs.value,Fy,no_empty=True)
+	global textoDRCondFil
+	idx = get_idx_selection(textoDRCondFil,idsMuestras,no_empty=True)
 	source_obs.data['colors'] = [textinput_color_obs.value if i in idx else source_obs.data['colors'][i] for i in range(N)]
-	print(f"update_color_obs_1: {textinput_color_obs.value}, {len(idx)} elementos")
+	print(f"update_color_obs_1: {textoDRCondFil}, {len(idx)} elementos")
 
 def update_color_var_1():
 	idx = get_idx_selection(textinput_colorsel_var.value,Fx,no_empty=True)
